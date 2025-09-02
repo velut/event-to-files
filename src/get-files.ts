@@ -94,9 +94,6 @@ async function dirEntryToFiles(dirEntry: FileSystemDirectoryEntry): Promise<File
 					dirEntries.push(entry as FileSystemDirectoryEntry);
 					continue;
 				}
-
-				// Should be unreachable.
-				throw new Error("event-to-files: unsupported FileSystemEntry type in directory");
 			}
 		}
 	}
