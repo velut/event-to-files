@@ -56,8 +56,8 @@ async function entryToFiles(entry: FileSystemEntry | null): Promise<File[]> {
 		return await dirEntryToFiles(entry as FileSystemDirectoryEntry);
 	}
 
-	// Should be unreachable.
-	throw new Error("event-to-files: unsupported FileSystemEntry type");
+	// Unknown entry type. Should be unreachable.
+	return [];
 }
 
 async function fileEntryToFile(fileEntry: FileSystemFileEntry): Promise<File> {
