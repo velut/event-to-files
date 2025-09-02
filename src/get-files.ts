@@ -13,7 +13,7 @@ export async function getFiles(event: Event): Promise<File[]> {
 	}
 
 	throw new Error(
-		"event-to-files: unsupported event type; `getFiles` must be called with an event of type `change` or `drop`",
+		"event-to-files: `getFiles` must be called with an event type of `change` or `drop`",
 	);
 }
 
