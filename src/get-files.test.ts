@@ -2,20 +2,20 @@ import { expect, test } from "vitest";
 import { fromAny } from "@total-typescript/shoehorn";
 import { getFiles } from "./get-files";
 
-test("rejects unknown event", async () => {
-	await expect(getFiles(fromAny({ type: "unknown" }))).rejects.toThrow();
+test("handles unknown event", async () => {
+	expect(await getFiles(fromAny({ type: "unknown" }))).toEqual([]);
 });
 
-test("rejects `change` event without a target", async () => {
-	await expect(getFiles(fromAny({ type: "change" }))).rejects.toThrow();
+test("handles `change` event without a target", async () => {
+	expect(await getFiles(fromAny({ type: "change" }))).toEqual([]);
 });
 
-test("rejects `change` event with target without files", async () => {
-	await expect(getFiles(fromAny({ type: "change", target: {} }))).rejects.toThrow();
+test("handles `change` event with target without files", async () => {
+	expect(await getFiles(fromAny({ type: "change", target: {} }))).toEqual([]);
 });
 
-test("rejects `drop` event without `dataTransfer`", async () => {
-	await expect(getFiles(fromAny({ type: "drop" }))).rejects.toThrow();
+test("handles `drop` event without `dataTransfer`", async () => {
+	expect(await getFiles(fromAny({ type: "drop" }))).toEqual([]);
 });
 
 test("handles `change` event with null files", async () => {
@@ -188,7 +188,7 @@ test("rejects `drop` event with file item returning a file entry type that rejec
 	).rejects.toThrow();
 });
 
-test("handles `drop` event with file item returning a file entry type", async () => {
+test("handles `drop` event with file item returning a file entry", async () => {
 	expect(
 		await getFiles(
 			fromAny({
@@ -222,7 +222,7 @@ test("handles `drop` event with file item returning a file entry type", async ()
 	`);
 });
 
-test("rejects `drop` event with file item returning a directory entry type that rejects when reading entries", async () => {
+test("rejects `drop` event with file item returning a directory entry that rejects when reading entries", async () => {
 	await expect(
 		getFiles(
 			fromAny({
@@ -255,7 +255,7 @@ test("rejects `drop` event with file item returning a directory entry type that 
 	).rejects.toThrow();
 });
 
-test("handles `drop` event with file item returning a directory entry type that returns an empty directory", async () => {
+test("handles `drop` event with file item returning a directory entry that returns an empty directory", async () => {
 	expect(
 		await getFiles(
 			fromAny({
@@ -286,6 +286,55 @@ test("handles `drop` event with file item returning a directory entry type that 
 			}),
 		),
 	).toEqual([]);
+});
+
+test("handles `drop` event with file item returning a directory entry that returns a single file", async () => {
+	let i = 0;
+	expect(
+		await getFiles(
+			fromAny({
+				type: "drop",
+				dataTransfer: {
+					items: [
+						{
+							kind: "file",
+							getAsFile() {
+								return null;
+							},
+							webkitGetAsEntry() {
+								return {
+									isFile: false,
+									isDirectory: true,
+									createReader() {
+										return {
+											readEntries(ok: any, err: any) {
+												if (i > 0) ok([]);
+												ok([
+													{
+														isFile: true,
+														file(ok: any, err: any) {
+															ok({ name: "foo" });
+														},
+													},
+												]);
+												i++;
+											},
+										};
+									},
+								};
+							},
+						},
+					],
+				},
+			}),
+		),
+	).toMatchInlineSnapshot(`
+		[
+		  {
+		    "name": "foo",
+		  },
+		]
+	`);
 });
 
 test("handles `drop` event with file item returning a directory entry type that returns a single file", async () => {
