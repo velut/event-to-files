@@ -12,9 +12,8 @@ export async function getFiles(event: Event): Promise<File[]> {
 		return await handleDropEvent(event as DragEvent);
 	}
 
-	throw new Error(
-		"event-to-files: `getFiles` must be called with an event type of `change` or `drop`",
-	);
+	// Unsupported event, no files.
+	return [];
 }
 
 function handleChangeEvent(event: Event): File[] {
@@ -37,7 +36,7 @@ async function itemToFiles(item: DataTransferItem): Promise<File[]> {
 		return await entryToFiles(item.webkitGetAsEntry());
 	}
 
-	// No files for this item.
+	// Cannot get file or entry, no files.
 	return [];
 }
 
@@ -56,7 +55,7 @@ async function entryToFiles(entry: FileSystemEntry | null): Promise<File[]> {
 		return await dirEntryToFiles(entry as FileSystemDirectoryEntry);
 	}
 
-	// Unknown entry type. Should be unreachable.
+	// Unknown entry type, no files. Should be unreachable.
 	return [];
 }
 
@@ -88,11 +87,8 @@ async function dirEntryToFiles(dirEntry: FileSystemDirectoryEntry): Promise<File
 				if (entry.isFile) {
 					const file = await fileEntryToFile(entry as FileSystemFileEntry);
 					files.push(file);
-					continue;
-				}
-				if (entry.isDirectory) {
+				} else if (entry.isDirectory) {
 					dirEntries.push(entry as FileSystemDirectoryEntry);
-					continue;
 				}
 			}
 		}
