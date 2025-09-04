@@ -1,10 +1,23 @@
+/* `EventFile` represents a file returned from an event. */
+export type EventFile = {
+	/* The `File` returned from a files input or a drop event. */
+	file: File;
+
+	/* The `FileSystemFileEntry` associated to a `File`.
+	This entry is only available when a directory is dragged and dropped
+	and its files are extracted; it can be used to retrieve the `entry.fullPath`
+	of a file to reconstruct the directory file structure.
+	This entry may not be available in all browsers. */
+	entry?: FileSystemFileEntry;
+};
+
 /**
 `getFiles` returns the list of `File`s from a `change` or `drop` Event.
 */
-export const getFiles = async (event: Event): Promise<File[]> => {
+export const getFiles = async (event: Event): Promise<EventFile[]> => {
 	// Get the list of files from the `<input type="files" />` `change` event.
 	if (event.type === "change") {
-		return [...((event.target as HTMLInputElement | null)?.files ?? [])];
+		return [...((event.target as HTMLInputElement | null)?.files ?? [])].map((file) => ({ file }));
 	}
 
 	// Get the list of files from the drag and drop `DragEvent`.
@@ -23,17 +36,17 @@ export const getFiles = async (event: Event): Promise<File[]> => {
 	return [];
 };
 
-const itemToFiles = async (item: DataTransferItem): Promise<File[]> => {
-	return [
-		// If the item is a single file, return the file.
-		item.getAsFile() ??
-			// Otherwise, try to get the files from the entries.
-			// Note: `webkitGetAsEntry` may not be available in all browsers.
-			(await entryToFiles(item.webkitGetAsEntry?.())),
-	].flat();
+const itemToFiles = async (item: DataTransferItem): Promise<EventFile[]> => {
+	// If the item is a single file, return the file.
+	let file = item.getAsFile();
+	if (file) return [{ file }];
+
+	// Otherwise, try to get the files from the entries.
+	// Note: `webkitGetAsEntry` may not be available in all browsers.
+	return await entryToFiles(item.webkitGetAsEntry?.());
 };
 
-const entryToFiles = async (entry: FileSystemEntry | null | undefined): Promise<File[]> => {
+const entryToFiles = async (entry: FileSystemEntry | null | undefined): Promise<EventFile[]> => {
 	// Entry is a single file.
 	if (entry?.isFile) {
 		return [await fileEntryToFile(entry as FileSystemFileEntry)];
@@ -48,14 +61,16 @@ const entryToFiles = async (entry: FileSystemEntry | null | undefined): Promise<
 	return [];
 };
 
-const fileEntryToFile = (fileEntry: FileSystemFileEntry): Promise<File> => {
+const fileEntryToFile = (entry: FileSystemFileEntry): Promise<EventFile> => {
 	return new Promise((resolve, reject) => {
-		fileEntry.file(resolve, reject);
+		entry.file((file) => {
+			resolve({ file, entry });
+		}, reject);
 	});
 };
 
-const dirEntryToFiles = async (dirEntry: FileSystemDirectoryEntry): Promise<File[]> => {
-	let files: File[] = [];
+const dirEntryToFiles = async (dirEntry: FileSystemDirectoryEntry): Promise<EventFile[]> => {
+	let files: EventFile[] = [];
 
 	// Loop until we read all directories.
 	let dirEntries = [dirEntry];

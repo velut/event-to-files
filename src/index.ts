@@ -8,4 +8,4 @@ import { getFiles } from "event-to-files";
 @packageDocumentation
 */
 
-export { getFiles } from "./get-files";
+export { getFiles, type EventFile } from "./get-files";
