@@ -305,7 +305,6 @@ test("handles `drop` event with file item returning a directory entry that retur
 });
 
 test("handles `drop` event with file item returning a directory entry that returns a single file", async () => {
-	let i = 0;
 	expect(
 		await getFiles(
 			fromAny({
@@ -318,27 +317,7 @@ test("handles `drop` event with file item returning a directory entry that retur
 								return null;
 							},
 							webkitGetAsEntry() {
-								return {
-									isFile: false,
-									isDirectory: true,
-									createReader() {
-										return {
-											readEntries(ok: any, _: any) {
-												if (i > 0) ok([]);
-												ok([
-													{
-														isFile: true,
-														file(ok: any, _: any) {
-															ok({ name: "foo" });
-														},
-														fullPath: "/foo",
-													},
-												]);
-												i++;
-											},
-										};
-									},
-								};
+								return dirEntry([fileEntry("/foo")]);
 							},
 						},
 					],
@@ -361,8 +340,7 @@ test("handles `drop` event with file item returning a directory entry that retur
 	`);
 });
 
-test("handles `drop` event with file item returning a directory entry type that returns a single file", async () => {
-	let i = 0;
+test("handles `drop` event with file item returning a directory entry that returns nested files and directories", async () => {
 	expect(
 		await getFiles(
 			fromAny({
@@ -375,26 +353,17 @@ test("handles `drop` event with file item returning a directory entry type that 
 								return null;
 							},
 							webkitGetAsEntry() {
-								return {
-									isFile: false,
-									isDirectory: true,
-									createReader() {
-										return {
-											readEntries(ok: any, err: any) {
-												if (i > 0) ok([]);
-												ok([
-													{
-														isFile: true,
-														file(ok: any, err: any) {
-															ok({ name: "foo" });
-														},
-													},
-												]);
-												i++;
-											},
-										};
-									},
-								};
+								return dirEntry([
+									fileEntry("/foo"),
+									dirEntry([
+										fileEntry("/bar/bar.foo"),
+										dirEntry([fileEntry("/bar/baz/bar.baz.foo")]),
+									]),
+									dirEntry([
+										fileEntry("/qux/qux.foo"),
+										dirEntry([fileEntry("/qux/moo/qux.moo.foo")]),
+									]),
+								]);
 							},
 						},
 					],
@@ -406,12 +375,81 @@ test("handles `drop` event with file item returning a directory entry type that 
 		  {
 		    "entry": {
 		      "file": [Function],
+		      "fullPath": "/foo",
 		      "isFile": true,
 		    },
 		    "file": {
 		      "name": "foo",
 		    },
 		  },
+		  {
+		    "entry": {
+		      "file": [Function],
+		      "fullPath": "/qux/qux.foo",
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "qux.foo",
+		    },
+		  },
+		  {
+		    "entry": {
+		      "file": [Function],
+		      "fullPath": "/qux/moo/qux.moo.foo",
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "qux.moo.foo",
+		    },
+		  },
+		  {
+		    "entry": {
+		      "file": [Function],
+		      "fullPath": "/bar/bar.foo",
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "bar.foo",
+		    },
+		  },
+		  {
+		    "entry": {
+		      "file": [Function],
+		      "fullPath": "/bar/baz/bar.baz.foo",
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "bar.baz.foo",
+		    },
+		  },
 		]
 	`);
 });
+
+function fileEntry(fullPath: string) {
+	const name = fullPath.split("/").pop()!;
+	return {
+		isFile: true,
+		file(ok: any, _: any) {
+			ok({ name });
+		},
+		fullPath,
+	};
+}
+
+function dirEntry(entries: any[]) {
+	let i = 0;
+	return {
+		isFile: false,
+		isDirectory: true,
+		createReader() {
+			return {
+				readEntries(ok: any, _: any) {
+					if (i > 0) ok([]);
+					ok(entries);
+					i++;
+				},
+			};
+		},
+	};
+}
