@@ -29,12 +29,14 @@ test("handles `change` event with no files", async () => {
 test("handles `change` event with one file", async () => {
 	expect(await getFiles(fromAny({ type: "change", target: { files: [{ name: "foo" }] } })))
 		.toMatchInlineSnapshot(`
-		[
-		  {
-		    "name": "foo",
-		  },
-		]
-	`);
+			[
+			  {
+			    "file": {
+			      "name": "foo",
+			    },
+			  },
+			]
+		`);
 });
 
 test("handles `change` event with multiple files", async () => {
@@ -45,10 +47,14 @@ test("handles `change` event with multiple files", async () => {
 	).toMatchInlineSnapshot(`
 		[
 		  {
-		    "name": "foo",
+		    "file": {
+		      "name": "foo",
+		    },
 		  },
 		  {
-		    "name": "bar",
+		    "file": {
+		      "name": "bar",
+		    },
 		  },
 		]
 	`);
@@ -108,7 +114,9 @@ test("handles `drop` event with file item returning a file", async () => {
 	).toMatchInlineSnapshot(`
 		[
 		  {
-		    "name": "foo",
+		    "file": {
+		      "name": "foo",
+		    },
 		  },
 		]
 	`);
@@ -175,7 +183,7 @@ test("rejects `drop` event with file item returning a file entry type that rejec
 							webkitGetAsEntry() {
 								return {
 									isFile: true,
-									file(ok: any, err: any) {
+									file(_: any, err: any) {
 										err("error");
 									},
 								};
@@ -203,9 +211,10 @@ test("handles `drop` event with file item returning a file entry", async () => {
 							webkitGetAsEntry() {
 								return {
 									isFile: true,
-									file(ok: any, err: any) {
+									file(ok: any, _: any) {
 										ok({ name: "foo" });
 									},
+									fullPath: "/foo",
 								};
 							},
 						},
@@ -216,7 +225,14 @@ test("handles `drop` event with file item returning a file entry", async () => {
 	).toMatchInlineSnapshot(`
 		[
 		  {
-		    "name": "foo",
+		    "entry": {
+		      "file": [Function],
+		      "fullPath": "/foo",
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "foo",
+		    },
 		  },
 		]
 	`);
@@ -240,7 +256,7 @@ test("rejects `drop` event with file item returning a directory entry that rejec
 									isDirectory: true,
 									createReader() {
 										return {
-											readEntries(ok: any, err: any) {
+											readEntries(_: any, err: any) {
 												err("error");
 											},
 										};
@@ -273,7 +289,7 @@ test("handles `drop` event with file item returning a directory entry that retur
 									isDirectory: true,
 									createReader() {
 										return {
-											readEntries(ok: any, err: any) {
+											readEntries(ok: any, _: any) {
 												ok([]);
 											},
 										};
@@ -307,14 +323,15 @@ test("handles `drop` event with file item returning a directory entry that retur
 									isDirectory: true,
 									createReader() {
 										return {
-											readEntries(ok: any, err: any) {
+											readEntries(ok: any, _: any) {
 												if (i > 0) ok([]);
 												ok([
 													{
 														isFile: true,
-														file(ok: any, err: any) {
+														file(ok: any, _: any) {
 															ok({ name: "foo" });
 														},
+														fullPath: "/foo",
 													},
 												]);
 												i++;
@@ -331,7 +348,14 @@ test("handles `drop` event with file item returning a directory entry that retur
 	).toMatchInlineSnapshot(`
 		[
 		  {
-		    "name": "foo",
+		    "entry": {
+		      "file": [Function],
+		      "fullPath": "/foo",
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "foo",
+		    },
 		  },
 		]
 	`);
@@ -380,7 +404,13 @@ test("handles `drop` event with file item returning a directory entry type that 
 	).toMatchInlineSnapshot(`
 		[
 		  {
-		    "name": "foo",
+		    "entry": {
+		      "file": [Function],
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "foo",
+		    },
 		  },
 		]
 	`);
