@@ -16,6 +16,7 @@ or from a `drop` event when dragging and dropping files.
 - Compatible with `change` event on `<input type="file" />`
 - Compatible with drag and drop of files and directories
 - Returns standard web types (`File` and `FileSystemFileEntry`)
+- No dependencies
 - Tiny: less than 1KB when minified
 - ESM only package
 
