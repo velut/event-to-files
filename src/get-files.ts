@@ -14,7 +14,7 @@ export type EventFile = {
 /**
 `getFiles` returns the list of `File`s from a `change` or `drop` Event.
 */
-export const getFiles = async (event: Event): Promise<EventFile[]> => {
+export let getFiles = async (event: Event): Promise<EventFile[]> => {
 	// Get the list of files from the `<input type="files" />` `change` event.
 	if (event.type === "change") {
 		return [...((event.target as HTMLInputElement | null)?.files ?? [])].map((file) => ({ file }));
@@ -36,7 +36,7 @@ export const getFiles = async (event: Event): Promise<EventFile[]> => {
 	return [];
 };
 
-const itemToFiles = async (item: DataTransferItem): Promise<EventFile[]> => {
+let itemToFiles = async (item: DataTransferItem): Promise<EventFile[]> => {
 	// If the item is a single file, return the file.
 	let file = item.getAsFile();
 	if (file) return [{ file }];
@@ -46,7 +46,7 @@ const itemToFiles = async (item: DataTransferItem): Promise<EventFile[]> => {
 	return await entryToFiles(item.webkitGetAsEntry?.());
 };
 
-const entryToFiles = async (entry: FileSystemEntry | null | undefined): Promise<EventFile[]> => {
+let entryToFiles = async (entry: FileSystemEntry | null | undefined): Promise<EventFile[]> => {
 	// Entry is a single file.
 	if (entry?.isFile) {
 		return [await fileEntryToFile(entry as FileSystemFileEntry)];
@@ -61,7 +61,7 @@ const entryToFiles = async (entry: FileSystemEntry | null | undefined): Promise<
 	return [];
 };
 
-const fileEntryToFile = (entry: FileSystemFileEntry): Promise<EventFile> => {
+let fileEntryToFile = (entry: FileSystemFileEntry): Promise<EventFile> => {
 	return new Promise((resolve, reject) => {
 		entry.file((file) => {
 			resolve({ file, entry });
@@ -69,7 +69,7 @@ const fileEntryToFile = (entry: FileSystemFileEntry): Promise<EventFile> => {
 	});
 };
 
-const dirEntryToFiles = async (dirEntry: FileSystemDirectoryEntry): Promise<EventFile[]> => {
+let dirEntryToFiles = async (dirEntry: FileSystemDirectoryEntry): Promise<EventFile[]> => {
 	let files: EventFile[] = [];
 
 	// Loop until we read all directories.
