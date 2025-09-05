@@ -1,7 +1,7 @@
 {
 	"name": "event-to-files",
 	"version": "0.1.0",
-	"description": "Get the files from an input's change event or from a drag and drop event",
+	"description": "Get the files from an input change event or from a file or directory drag and drop event",
 	"license": "MIT",
 	"author": {
 		"name": "Edoardo Scibona",
@@ -18,6 +18,8 @@
 		"Event",
 		"DragEvent",
 		"File",
+		"directory",
+		"folder",
 		"HTML",
 		"input",
 		"change",
