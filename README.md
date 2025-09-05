@@ -88,6 +88,10 @@ dropZone.addEventListener("drop", async (event) => {
 });
 ```
 
+## CDN
+
+Use an ESM compatible CDN, for example [jsDelivr](https://www.jsdelivr.com/package/npm/event-to-files).
+
 ## License
 
 ```
