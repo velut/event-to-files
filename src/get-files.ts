@@ -97,7 +97,7 @@ let itemToFiles = async (item: DataTransferItem): Promise<EventFile[]> => {
 	// A true file exists, return it with its entry.
 	if (entry?.isFile && file) return [{ file, entry: entry as FileSystemFileEntry }];
 
-	// Otherwise, try to get the files from the entries.
+	// Try to get the files from the entry.
 	return await entryToFiles(entry);
 };
 
