@@ -238,6 +238,65 @@ test("handles `drop` event with file item returning a file entry", async () => {
 	`);
 });
 
+test("handles `drop` event with file item returning a file for a directory entry", async () => {
+	expect(
+		await getFiles(
+			fromAny({
+				type: "drop",
+				dataTransfer: {
+					items: [
+						{
+							kind: "file",
+							getAsFile() {
+								return { name: "foo" };
+							},
+							webkitGetAsEntry() {
+								return dirEntry([]);
+							},
+						},
+					],
+				},
+			}),
+		),
+	).toEqual([]);
+});
+
+test("handles `drop` event with file item returning a file for a file entry", async () => {
+	expect(
+		await getFiles(
+			fromAny({
+				type: "drop",
+				dataTransfer: {
+					items: [
+						{
+							kind: "file",
+							getAsFile() {
+								return { name: "foo" };
+							},
+							webkitGetAsEntry() {
+								return fileEntry("/foo");
+							},
+						},
+					],
+				},
+			}),
+		),
+	).toMatchInlineSnapshot(`
+		[
+		  {
+		    "entry": {
+		      "file": [Function],
+		      "fullPath": "/foo",
+		      "isFile": true,
+		    },
+		    "file": {
+		      "name": "foo",
+		    },
+		  },
+		]
+	`);
+});
+
 test("rejects `drop` event with file item returning a directory entry that rejects when reading entries", async () => {
 	await expect(
 		getFiles(

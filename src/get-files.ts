@@ -82,13 +82,23 @@ export let getFiles = async (event: Event): Promise<EventFile[]> => {
 };
 
 let itemToFiles = async (item: DataTransferItem): Promise<EventFile[]> => {
-	// If the item is a single file, return the file.
+	// Note: `webkitGetAsEntry` may not be available in all browsers.
+	let entry = item.webkitGetAsEntry?.();
+
+	// Note: `getAsFile` returns a non-null `File` even for directories.
 	let file = item.getAsFile();
-	if (file) return [{ file }];
+
+	// No entry or file for this item.
+	if (!entry && !file) return [];
+
+	// A file exists but not its entry; it could be a real file or a directory.
+	if (!entry && file) return [{ file }];
+
+	// A true file exists, return it with its entry.
+	if (entry?.isFile && file) return [{ file, entry: entry as FileSystemFileEntry }];
 
 	// Otherwise, try to get the files from the entries.
-	// Note: `webkitGetAsEntry` may not be available in all browsers.
-	return await entryToFiles(item.webkitGetAsEntry?.());
+	return await entryToFiles(entry);
 };
 
 let entryToFiles = async (entry: FileSystemEntry | null | undefined): Promise<EventFile[]> => {
