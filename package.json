@@ -69,7 +69,7 @@
 		"@vitest/coverage-v8": "^4.0.16",
 		"np": "^10.2.0",
 		"prettier": "^3.7.4",
-		"typescript": "^5.9.2",
+		"typescript": "^6.0.3",
 		"vitest": "^4.0.16",
 		"zshy": "^0.7.0"
 	}
